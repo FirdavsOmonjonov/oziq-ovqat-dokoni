@@ -4,6 +4,7 @@ from django.db import models
 
 
 class Category(models.Model):
+    """Category model"""
     name = models.CharField(max_length=50, unique=True, verbose_name="Kategoriya")
     image = models.ImageField(upload_to='categories/', null=True, blank=True)
     slug = models.SlugField(null=True, blank=True)
@@ -23,6 +24,7 @@ FILTER_CHOICES = {
 
 
 class Product(models.Model):
+    """Product model"""
     category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="Kategoriya")
     filter_choice = models.CharField(max_length=3, choices=FILTER_CHOICES, null=True)
     name = models.CharField(max_length=255, verbose_name="Nomi")

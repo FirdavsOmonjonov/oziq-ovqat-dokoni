@@ -1,11 +1,11 @@
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from django.http import HttpRequest, HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
-from .models import Category, Product
+from .models import Category, Product, Rating
 
 
-# Create your views here.
-
+"""Class yordamida yozilgan view"""
 class ProductList(ListView):
     """Product list view at class level."""
     model = Product
@@ -41,17 +41,42 @@ class SortingBySubcategories(AllProductsList):
         return context
 
 
-def detail(request , product_id):
-    """Product detail view at func level"""
-    product = Product.objects.get(id=product_id)
-    products = Product.objects.filter(category=product.category)
-    context = {
-        'product': product,
-        'categories': Category.objects.filter(parent=None),
-        'page_name': "Shop Detail",
-        'products': products
+class ProductDetail(DetailView):
+    """Product detail view at class level"""
+    model = Product
+    template_name ='shop/detail.html'
+    context_object_name = 'product'
+    extra_context = {
+        'page_name' : "Shop Details",
     }
-    return render(request,'shop/detail.html', context)
+
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        product = Product.objects.get(id=self.kwargs['pk'])
+        rating = Rating.objects.filter(product=product, user=self.request.user).first()
+        context['user_rating'] = rating.rating if rating else 0
+        
+        return context
+
+
+
+"""Funkisi yordamida yozilgan view"""
+def index(request: HttpRequest) -> HttpResponse:
+    posts = Product.objects.all()
+    for post in posts:
+        rating = Rating.objects.filter(post=post, user=request.user).first()
+        post.user_rating = rating.rating if rating else 0
+    return render(request, "index.html", {"posts": posts})
+
+
+def rate(request: HttpRequest, product_id: int, rating: int) -> HttpResponse:
+    product = Product.objects.get(id=product_id)
+    Rating.objects.filter(product=product, user=request.user).delete()
+    product.rating_set.create(user=request.user, rating=rating)
+    return redirect('detail', id = product.id)
+
+
 
 
 def sorting_by_subcategories(request, slug):
@@ -63,6 +88,17 @@ def sorting_by_subcategories(request, slug):
     }
     return render(request, 'shop/detail.html', context)
 
+# def detail(request , product_id):
+    # """Product detail view at func level"""
+    # product = Product.objects.get(id=product_id)
+    # products = Product.objects.filter(category=product.category)
+    # context = {
+    #     'product': product,
+    #     'categories': Category.objects.filter(parent=None),
+    #     'page_name': "Shop Detail",
+    #     'products': products
+    # }
+    # return render(request,'shop/detail.html', context)
 
 
 # def sorting(request: HttpRequest, key_name) -> HttpResponse:

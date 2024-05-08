@@ -46,37 +46,25 @@ class ProductDetail(DetailView):
     model = Product
     template_name ='shop/detail.html'
     context_object_name = 'product'
-    extra_context = {
-        'page_name' : "Shop Details",
-    }
-
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        product = Product.objects.get(id=self.kwargs['pk'])
+        product = self.object  # Access the current product instance
         rating = Rating.objects.filter(product=product, user=self.request.user).first()
         context['user_rating'] = rating.rating if rating else 0
-        
+        related_products = Product.objects.filter(category=self.object.category)
+        context['page_name'] = "Shop Details"
+        context['categories'] = Category.objects.filter(parent=None)
+        context['products'] = related_products
         return context
 
 
-
 """Funkisi yordamida yozilgan view"""
-def index(request: HttpRequest) -> HttpResponse:
-    posts = Product.objects.all()
-    for post in posts:
-        rating = Rating.objects.filter(post=post, user=request.user).first()
-        post.user_rating = rating.rating if rating else 0
-    return render(request, "index.html", {"posts": posts})
-
-
 def rate(request: HttpRequest, product_id: int, rating: int) -> HttpResponse:
     product = Product.objects.get(id=product_id)
     Rating.objects.filter(product=product, user=request.user).delete()
     product.rating_set.create(user=request.user, rating=rating)
     return redirect('detail', id = product.id)
-
-
 
 
 def sorting_by_subcategories(request, slug):
@@ -88,27 +76,28 @@ def sorting_by_subcategories(request, slug):
     }
     return render(request, 'shop/detail.html', context)
 
-# def detail(request , product_id):
-    # """Product detail view at func level"""
-    # product = Product.objects.get(id=product_id)
-    # products = Product.objects.filter(category=product.category)
-    # context = {
-    #     'product': product,
-    #     'categories': Category.objects.filter(parent=None),
-    #     'page_name': "Shop Detail",
-    #     'products': products
-    # }
-    # return render(request,'shop/detail.html', context)
+
+def detail(request , product_id):
+    """Product detail view at func level"""
+    product = Product.objects.get(id=product_id)
+    products = Product.objects.filter(category=product.category)
+    context = {
+        'product': product,
+        'categories': Category.objects.filter(parent=None),
+        'page_name': "Shop Detail",
+        'products': products
+    }
+    return render(request,'shop/detail.html', context)
 
 
-# def sorting(request: HttpRequest, key_name) -> HttpResponse:
-#     """Sorting products view at func level"""
-#     context = {
-#         'products': Product.objects.filter(filter_choice=key_name),
-#         'categories': Category.objects.filter(parent=None)
+def sorting(request: HttpRequest, key_name) -> HttpResponse:
+    """Sorting products view at func level"""
+    context = {
+        'products': Product.objects.filter(filter_choice=key_name),
+        'categories': Category.objects.filter(parent=None)
         
-#     }
-#     return render(request, 'shop/all_products.html', context)
+    }
+    return render(request, 'shop/all_products.html', context)
 
 
 

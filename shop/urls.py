@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import ProductList, AllProductsList, SortingProductsList, SortingBySubcategories,ProductDetail,sorting_by_subcategories, rate
+from .views import ProductList, AllProductsList, SortingProductsList, SortingBySubcategories,  ProductDetail,  sorting_by_subcategories, rate
 
 
 urlpatterns = [

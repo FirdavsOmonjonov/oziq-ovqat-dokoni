@@ -30,15 +30,15 @@
                                 <p class="mb-3">Category: {{ product.category.name }}</p>
                                 <h5 class="fw-bold mb-3">{{ product.price }} $</h5>
                                     <ul class=" list-inline rating-list">
-                                        <li onclick="rate(5, { product_id })">
+                                        <li onclick="rate(5, {{ product.id }})">
                                             <i class="fa fa-star {% if user_rating > 4 %} checked {% endif %}" title="Rate 5"></i></li>
-                                        <li onclick="rate(4, { product_id })">
+                                        <li onclick="rate(4, {{ product.id }})">
                                             <i class="fa fa-star {% if user_rating > 3 %} checked {% endif %}" title="Rate 4"></i></li>
-                                        <li onclick="rate(3, { product_id })">
+                                        <li onclick="rate(3, {{ product.id }})">
                                             <i class="fa fa-star {% if user_rating > 2 %} checked {% endif %}" title="Rate 3"></i></li>
-                                        <li onclick="rate(2, { product_id })">
+                                        <li onclick="rate(2, {{ product.id }})">
                                             <i class="fa fa-star {% if user_rating > 1 %} checked {% endif %}" title="Rate 2"></i></li>
-                                        <li onclick="rate(1, { product_id })">
+                                        <li onclick="rate(1, {{ product.id }})">
                                             <i class="fa fa-star {% if user_rating > 0 %} checked {% endif %}" title="Rate 1"></i></li>
                                     </ul>
                                 <p class="mb-4">{{ product.description|linebreaks}}</p>
@@ -360,26 +360,28 @@
                 <h1 class="fw-bold mb-0">Related products</h1>
                 <div class="vesitable">
                     <div class="owl-carousel vegetable-carousel justify-content-center">
-                        
-                        {% for produc in products %}
+                        {% for product in products %}
                         <div class="border border-primary rounded position-relative vesitable-item">
                             <div class="vesitable-img">
                                 <a href="{% url 'detail' product.id %}">
-                                    <img src="{{ produc.image.url }}" class="img-fluid w-100 rounded-top" alt="">
+                                    <img src="{{ product.image.url }}" class="img-fluid w-100 rounded-top" alt="">
                                 </a>
                             </div>
                             <div class="text-white bg-primary px-3 py-1 rounded position-absolute" style="top: 10px; right: 10px;">{{ product.category.name }}</div>
                             <div class="p-4 pb-0 rounded-bottom">
-                                <h4>{{ produc.name }}</h4>
-                                <p>{{ produc.description|truncatewords:15 }}</p>
+                                <h4>{{ product.name }}</h4>
+                                <p>{{ product.description|truncatewords:15 }}</p>
                                 <div class="d-flex justify-content-between flex-lg-wrap">
-                                    <p class="text-dark fs-5 fw-bold">${{ produc.discount }} / kg</p>
+                                    <p class="text-dark fs-5 fw-bold">${{ product.discount }} / kg</p>
                                     
                                     <a href="#" class="btn border border-secondary rounded-pill px-3 py-1 mb-4 text-primary"><i class="fa fa-shopping-bag me-2 text-primary"></i> Add to cart</a>
                                 </div>
                             </div>
                         </div>
                         {% endfor %}
+                    </div>
+                </div>
+                
                         
                     </div>
                 </div>

@@ -3,10 +3,67 @@ from django.http import HttpRequest, HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.shortcuts import render
 from .models import Category, Product, Rating
+from django.shortcuts import render, redirect
+from shop import models
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from .forms import UserRegistrationForm
+
+def register(request):
+    if request.method == 'POST':
+        form = UserRegistrationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+            user = authenticate(username=username, password=password)
+            login(request, user)
+            return redirect('index')
+        else:
+            return render(request,'auth/error.html')
+    else:
+        form = UserRegistrationForm()
+    return render(request, 'auth/register.html', {'form': form})
+
+
+def log_in(request):
+    """Log in to"""
+    if request.method == 'POST':
+        try:
+            username = request.POST.get('username')
+            password = request.POST.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None:
+                login(request, user)
+                return redirect('index')
+            else:
+                return render(request,'auth/error.html')
+        except:
+            return redirect('index')
+    return render(request, 'auth/login.html')
+
+
+def log_out(request):
+    """Log out of"""
+    logout(request)
+    return redirect('error2')
+
+
+def error1(request):
+    """Login error"""
+    return render(request, 'auth/error.html')
+
+def error2(request):
+    """Admin panel error"""
+    return render(request, 'auth/error2.html')
+
+
 
 
 """Class yordamida yozilgan view"""
-class ProductList(ListView):
+# @login_required(login_url='login')
+class ProductList(ListView, LoginRequiredMixin):
     """Product list view at class level."""
     model = Product
     template_name = 'shop/index.html'
@@ -17,6 +74,7 @@ class ProductList(ListView):
         'page_name': "Shop",
     }
 
+    
 
 class AllProductsList(ProductList):
     """All products list view at class level"""
@@ -41,7 +99,7 @@ class SortingBySubcategories(AllProductsList):
         return context
 
 
-class ProductDetail(DetailView):
+class ProductDetail(DetailView, LoginRequiredMixin):
     """Product detail view at class level"""
     model = Product
     template_name ='shop/detail.html'
@@ -60,6 +118,7 @@ class ProductDetail(DetailView):
 
 
 """Funkisi yordamida yozilgan view"""
+@login_required(login_url='login')
 def rate(request: HttpRequest, product_id: int, rating: int) -> HttpResponse:
     product = Product.objects.get(id=product_id)
     Rating.objects.filter(product=product, user=request.user).delete()
@@ -67,6 +126,7 @@ def rate(request: HttpRequest, product_id: int, rating: int) -> HttpResponse:
     return redirect('detail', id = product.id)
 
 
+@login_required(login_url='login')
 def sorting_by_subcategories(request, slug):
     """Sorting by subcategories view at func level"""
     subcategory = Category.objects.get(slug=slug)
@@ -77,6 +137,7 @@ def sorting_by_subcategories(request, slug):
     return render(request, 'shop/detail.html', context)
 
 
+@login_required(login_url='login')
 def detail(request , product_id):
     """Product detail view at func level"""
     product = Product.objects.get(id=product_id)
@@ -90,6 +151,7 @@ def detail(request , product_id):
     return render(request,'shop/detail.html', context)
 
 
+@login_required(login_url='login')
 def sorting(request: HttpRequest, key_name) -> HttpResponse:
     """Sorting products view at func level"""
     context = {
@@ -98,8 +160,3 @@ def sorting(request: HttpRequest, key_name) -> HttpResponse:
         
     }
     return render(request, 'shop/all_products.html', context)
-
-
-
-
-
